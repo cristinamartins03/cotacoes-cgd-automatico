@@ -1,0 +1,36 @@
+name: Cotações CGD Diárias
+
+on:
+  schedule:
+    - cron: '0 21 * * *'  # Todo dia às 21:00 UTC (22:00 Portugal)
+  workflow_dispatch:  # Permite teste manual
+
+jobs:
+  coletar-cotacoes:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Baixar código
+      uses: actions/checkout@v4
+    
+    - name: Configurar Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: Instalar dependências
+      run: |
+        pip install -r requirements.txt
+    
+    - name: Executar coleta de cotações
+      run: |
+        python cotacoes_cgd_automatico.py
+    
+    - name: Salvar Excel no repositório
+      if: success()
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action Bot"
+        git add *.xlsx || echo "Nenhum Excel encontrado"
+        git commit -m "Cotações atualizadas - $(date +%Y-%m-%d)" || echo "Sem mudanças"
+        git push || echo "Erro no push"
