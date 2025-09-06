@@ -5,6 +5,9 @@ on:
     - cron: '0 21 * * *'  # Todo dia às 21:00 UTC (22:00 Portugal)
   workflow_dispatch:  # Permite teste manual
 
+permissions:
+  contents: write  # ESTA LINHA RESOLVE O PROBLEMA
+
 jobs:
   coletar-cotacoes:
     runs-on: ubuntu-latest
@@ -27,10 +30,9 @@ jobs:
         python cotacoes_cgd_automatico.py
     
     - name: Salvar Excel no repositório
-      if: success()
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action Bot"
-        git add *.xlsx || echo "Nenhum Excel encontrado"
+        git add cotacoes_fundos_cgd.xlsx
         git commit -m "Cotações atualizadas - $(date +%Y-%m-%d)" || echo "Sem mudanças"
-        git push || echo "Erro no push"
+        git push
